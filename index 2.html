@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Student Portal - Smart Records, Smart Alerts</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content signup-modal">
+            <div class="signup-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Create Your Account</h2>
+                <p>Join Meta Student Portal</p>
+            </div>
+            <div class="signup-form">
+                <input type="text" id="signupFullName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Email Address" required>
+                <input type="text" id="signupUsername" placeholder="Choose Username" required>
+                <input type="password" id="signupPassword" placeholder="Create Password" required>
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required>
+                <select id="signupRole">
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin/Teacher</option>
+                    <option value="student">Student</option>
+                </select>
+                <button onclick="handleSignup()" class="btn-primary">Create Account</button>
+                <p class="switch-auth">Already have an account? <a onclick="showLogin()">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-modal">
+            <div class="login-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Meta Student Portal</h2>
+                <p>Smart Records, Smart Alerts</p>
+            </div>
+            <div class="login-form">
+                <input type="text" id="loginUsername" placeholder="Username">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe">Remember Me</label>
+                </div>
+                <button onclick="handleLogin()" class="btn-primary">Login to Portal</button>
+                <p class="switch-auth">Don't have an account? <a onclick="showSignup()">Sign up here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <h1>Meta Student Portal</h1>
+                            <p>Smart Records, Smart Alerts</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <span id="userDisplay" class="user-display"></span>
+                        <button onclick="exportToExcel()" class="btn-export">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                        <button onclick="printReport()" class="btn-print">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                        <button onclick="handleLogout()" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="container">
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button class="tab-btn" onclick="switchTab('students')">
+                    <i class="fas fa-users"></i> Students
+                </button>
+                <button class="tab-btn" onclick="switchTab('notifications')">
+                    <i class="fas fa-bell"></i> Notifications
+                </button>
+                <button class="tab-btn" onclick="switchTab('reports')">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </button>
+                <button class="tab-btn" onclick="switchTab('settings')">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <h3 id="totalStudents">0</h3>
+                            <p>Total Students</p>
+                        </div>
+                    </div>
+                    <div class="stat-card green">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <h3 id="avgAttendance">0%</h3>
+                            <p>Avg Attendance</p>
+                        </div>
+                    </div>
+                    <div class="stat-card purple">
+                        <i class="fas fa-book-open"></i>
+                        <div>
+                            <h3 id="avgMarks">0</h3>
+                            <p>Average Marks</p>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <i class="fas fa-bell"></i>
+                        <div>
+                            <h3 id="totalNotifications">0</h3>
+                            <p>Active Notifications</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-trophy"></i> Top Performers</h3>
+                        </div>
+                        <div id="topPerformers" class="top-performers"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-exclamation-circle"></i> Recent Notifications</h3>
+                        </div>
+                        <div id="recentNotifications" class="notifications-list"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-pie"></i> Grade Distribution</h3>
+                    </div>
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Students Tab -->
+            <div id="students" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchStudent" placeholder="Search by name or ID..." onkeyup="searchStudents()">
+                        </div>
+                        <div class="header-actions">
+                            <button onclick="openAddStudentModal()" class="btn-primary">
+                                <i class="fas fa-plus"></i> Add Student
+                            </button>
+                            <button onclick="importStudents()" class="btn-secondary">
+                                <i class="fas fa-file-import"></i> Import CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Class</th>
+                                    <th>Attendance</th>
+                                    <th>Marks</th>
+                                    <th>Grade</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="notifications" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bell"></i> All Notifications</h3>
+                        <button onclick="openAddNotificationModal()" class="btn-primary">
+                            <i class="fas fa-plus"></i> Add Notification
+                        </button>
+                    </div>
+                    <div id="notificationsList" class="notifications-grid"></div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Generate Reports</h3>
+                    </div>
+                    <div class="reports-grid">
+                        <div class="report-card" onclick="generateAttendanceReport()">
+                            <i class="fas fa-calendar-check"></i>
+                            <h4>Attendance Report</h4>
+                            <p>View detailed attendance statistics</p>
+                        </div>
+                        <div class="report-card" onclick="generateGradeReport()">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h4>Grade Report</h4>
+                            <p>Analyze student performance</p>
+                        </div>
+                        <div class="report-card" onclick="generateClassReport()">
+                            <i class="fas fa-users"></i>
+                            <h4>Class Report</h4>
+                            <p>View class-wise statistics</p>
+                        </div>
+                        <div class="report-card" onclick="generateFullReport()">
+                            <i class="fas fa-file-pdf"></i>
+                            <h4>Complete Report</h4>
+                            <p>Generate comprehensive PDF</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-cog"></i> System Settings</h3>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label>Institution Name</label>
+                            <input type="text" id="institutionName" placeholder="Enter institution name">
+                        </div>
+                        <div class="setting-item">
+                            <label>Academic Year</label>
+                            <input type="text" id="academicYear" placeholder="e.g., 2025-2026">
+                        </div>
+                        <div class="setting-item">
+                            <label>Default Passing Marks</label>
+                            <input type="number" id="passingMarks" value="50">
+                        </div>
+                        <div class="setting-item">
+                            <label>Grade System</label>
+                            <select id="gradeSystem">
+                                <option value="standard">Standard (A+, A, B, C, D, F)</option>
+                                <option value="numeric">Numeric (90-100, 80-89, etc.)</option>
+                            </select>
+                        </div>
+                        <div class="setting-item full-width">
+                            <button onclick="saveSettings()" class="btn-primary">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                            <button onclick="backupData()" class="btn-secondary">
+                                <i class="fas fa-download"></i> Backup Data
+                            </button>
+                            <button onclick="restoreData()" class="btn-secondary">
+                                <i class="fas fa-upload"></i> Restore Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Student</h2>
+                <span class="close" onclick="closeModal('addStudentModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="studentName" placeholder="Full Name" required>
+                <input type="text" id="studentClass" placeholder="Class (e.g., BS-ESS 1st Year)" required>
+                <input type="email" id="studentEmail" placeholder="Email Address" required>
+                <input type="tel" id="studentPhone" placeholder="Phone Number" required>
+                <input type="number" id="studentAttendance" placeholder="Attendance %" min="0" max="100" required>
+                <input type="number" id="studentMarks" placeholder="Marks" min="0" max="100" required>
+                <textarea id="studentAddress" placeholder="Address" rows="3"></textarea>
+                <button onclick="addStudent()" class="btn-primary">Add Student</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Notification Modal -->
+    <div id="addNotificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Notification</h2>
+                <span class="close" onclick="closeModal('addNotificationModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <select id="notificationType" required>
+                    <option value="">Select Type</option>
+                    <option value="exam">Exam</option>
+                    <option value="assignment">Assignment</option>
+                    <option value="fee">Fee Reminder</option>
+                    <option value="attendance">Attendance Warning</option>
+                    <option value="event">Event</option>
+                    <option value="holiday">Holiday</option>
+                </select>
+                <input type="text" id="notificationTitle" placeholder="Notification Title" required>
+                <textarea id="notificationMessage" placeholder="Message" rows="4" required></textarea>
+                <input type="date" id="notificationDate">
+                <button onclick="addNotification()" class="btn-primary">Create Notification</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div id="editStudentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Student</h2>
+                <span class="close" onclick="closeModal('editStudentModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editStudentId">
+                <input type="text" id="editStudentName" placeholder="Full Name" required>
+                <input type="text" id="editStudentClass" placeholder="Class" required>
+                <input type="email" id="editStudentEmail" placeholder="Email Address" required>
+                <input type="tel" id="editStudentPhone" placeholder="Phone Number" required>
+                <input type="number" id="editStudentAttendance" placeholder="Attendance %" min="0" max="100" required>
+                <input type="number" id="editStudentMarks" placeholder="Marks" min="0" max="100" required>
+                <textarea id="editStudentAddress" placeholder="Address" rows="3"></textarea>
+                <button onclick="updateStudent()" class="btn-primary">Update Student</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
